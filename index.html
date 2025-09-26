@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LefDream-Game</title>
+
+  <!-- Librairies pour les échecs -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/css/chessboard-1.0.0.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/js/chessboard-1.0.0.min.js"></script>
+
+  <style>
+    :root{
+      --bg-dark:#05040a;
+      --neon-start:#2eb5ff;
+      --neon-end:#8a35ff;
+      --accent:#9bd3ff;
+      --panel:rgba(255,255,255,0.04);
+      --glass:rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;margin:0;padding:0}
+    body{
+      background: radial-gradient(1200px 800px at 10% 20%, rgba(46,181,255,0.08), transparent),
+                  radial-gradient(900px 600px at 90% 80%, rgba(138,53,255,0.06), transparent),
+                  var(--bg-dark);
+      color:#eaf6ff;min-height:100vh;padding:20px;
+      display:flex;flex-direction:column;gap:16px;
+    }
+    header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:50px;height:50px;object-fit:contain}
+    h1{font-size:20px;background:linear-gradient(90deg,var(--neon-start),var(--neon-end));-webkit-background-clip:text;color:transparent}
+    nav{display:flex;gap:8px}
+    .tab-btn{background:transparent;border:1px solid transparent;padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
+    .tab-btn.active{background:linear-gradient(90deg,var(--neon-start),var(--neon-end));color:#05040a}
+    main{flex:1;display:flex;flex-direction:column;gap:16px}
+    .tab-panel{display:none;padding:16px;border-radius:12px;background:rgba(255,255,255,0.02)}
+    .tab-panel.active{display:block}
+    /* Chess */
+    .chess-layout{display:flex;gap:18px;flex-wrap:wrap}
+    .chess-controls{min-width:200px;background:var(--glass);padding:8px;border-radius:8px}
+    #status{margin-bottom:8px}
+    /* Morpion */
+    .ttt-board{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:10px}
+    .ttt-cell{background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:40px;border-radius:8px;cursor:pointer}
+    /* RPS */
+    .rps-ui{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .rps-choices{display:flex;gap:10px}
+    .rps-btn{padding:10px 16px;border:none;border-radius:8px;background:linear-gradient(90deg,var(--neon-start),var(--neon-end));color:#05040a;font-weight:bold;cursor:pointer}
+    .rps-result{padding:10px 14px;background:var(--panel);border-radius:8px;min-width:220px;text-align:center}
+    footer{text-align:center;color:rgba(255,255,255,0.4)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="logo.png" class="logo" alt="logo">
+      <h1>LefDream-Game</h1>
+    </div>
+    <nav>
+      <button class="tab-btn active" data-tab="chess">Échecs</button>
+      <button class="tab-btn" data-tab="tictactoe">Morpion</button>
+      <button class="tab-btn" data-tab="rps">Pierre-Feuille-Ciseaux</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Échecs -->
+    <section id="chess" class="tab-panel active">
+      <h2>Échecs</h2>
+      <div class="chess-layout">
+        <div id="board" style="width:400px"></div>
+        <div class="chess-controls">
+          <p id="status"></p>
+          <button id="reset-chess">Réinitialiser</button><br>
+          <label><input type="checkbox" id="flipBoard"> Tourner le plateau</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Morpion -->
+    <section id="tictactoe" class="tab-panel">
+      <h2>Morpion</h2>
+      <div id="ttt-board" class="ttt-board"></div>
+      <p id="ttt-status"></p>
+      <button id="ttt-reset">Nouvelle partie</button>
+    </section>
+
+    <!-- RPS -->
+    <section id="rps" class="tab-panel">
+      <h2>Pierre-Feuille-Ciseaux</h2>
+      <div class="rps-ui">
+        <div class="rps-choices">
+          <button class="rps-btn" data-move="rock">Pierre</button>
+          <button class="rps-btn" data-move="paper">Feuille</button>
+          <button class="rps-btn" data-move="scissors">Ciseaux</button>
+        </div>
+        <div id="rps-result" class="rps-result"></div>
+        <p>Score: Vous <span id="rps-player-score">0</span> — IA <span id="rps-ai-score">0</span></p>
+        <button id="rps-reset">Réinitialiser score</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <small>© LefDream-Game</small>
+  </footer>
+
+<script>
+/* ----- Onglets ----- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ----- Échecs ----- */
+let game, board;
+const statusEl=document.getElementById('status');
+function initChess(){
+  game=new Chess();
+  board=Chessboard('board',{
+    draggable:true,position:'start',
+    onDragStart:(s,p)=>{if(game.game_over()||p[0]!=='w')return false},
+    onDrop:(s,t)=>{
+      let move=game.move({from:s,to:t,promotion:'q'});
+      if(!move)return 'snapback';
+      updateStatus();setTimeout(aiMove,400);
+    },
+    onSnapEnd:()=>board.position(game.fen())
+  });
+  updateStatus();
+}
+function updateStatus(){
+  if(game.in_checkmate()) statusEl.textContent="Échec et mat.";
+  else if(game.in_draw()) statusEl.textContent="Match nul.";
+  else statusEl.textContent=(game.turn()==='w'?"Votre tour":"Tour IA...");
+}
+function aiMove(){
+  if(game.game_over())return;
+  let moves=game.moves();
+  let move=moves[Math.floor(Math.random()*moves.length)];
+  game.move(move);board.position(game.fen());updateStatus();
+}
+document.getElementById('reset-chess').onclick=()=>{game.reset();board.start();updateStatus()};
+document.getElementById('flipBoard').onchange=e=>board.orientation(e.target.checked?'black':'white');
+initChess();
+
+/* ----- Morpion ----- */
+let tttBoard=document.getElementById('ttt-board'),tttStatus=document.getElementById('ttt-status');
+let ttt={board:Array(9).fill(null),turn:'X',over:false};
+function renderTtt(){
+  tttBoard.innerHTML='';
+  ttt.board.forEach((v,i)=>{
+    let d=document.createElement('div');d.className='ttt-cell';d.textContent=v||'';d.onclick=()=>playTtt(i);
+    tttBoard.appendChild(d);
+  });
+  tttStatus.textContent=checkWin(ttt.board,'X')?'X gagne':checkWin(ttt.board,'O')?'O gagne':ttt.board.every(Boolean)?'Match nul':(ttt.turn==='X'?'Votre tour':'Tour IA');
+}
+function playTtt(i){
+  if(ttt.over||ttt.turn!=='X'||ttt.board[i])return;
+  ttt.board[i]='X';if(checkWin(ttt.board,'X')||ttt.board.every(Boolean)){ttt.over=true;renderTtt();return}
+  ttt.turn='O';renderTtt();setTimeout(aiTtt,300);
+}
+function aiTtt(){
+  let avail=ttt.board.map((v,i)=>v?null:i).filter(v=>v!==null);
+  let choice=avail[Math.floor(Math.random()*avail.length)];
+  ttt.board[choice]='O';if(checkWin(ttt.board,'O')||ttt.board.every(Boolean)){ttt.over=true}
+  else ttt.turn='X';renderTtt();
+}
+function checkWin(b,p){return[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].some(l=>l.every(i=>b[i]===p))}
+document.getElementById('ttt-reset').onclick=()=>{ttt={board:Array(9).fill(null),turn:'X',over:false};renderTtt()};
+renderTtt();
+
+/* ----- Pierre-Feuille-Ciseaux ----- */
+const rpsBtns=document.querySelectorAll('.rps-btn'),rpsRes=document.getElementById('rps-result');
+let ps=0,ai=0;
+function winner(p,a){
+  if(p===a)return 'tie';
+  if((p==='rock'&&a==='scissors')||(p==='paper'&&a==='rock')||(p==='scissors'&&a==='paper'))return 'player';
+  return 'ai';
+}
+rpsBtns.forEach(b=>b.onclick=()=>{
+  let p=b.dataset.move,a=['rock','paper','scissors'][Math.floor(Math.random()*3)];
+  let w=winner(p,a);
+  if(w==='player'){ps++;rpsRes.textContent=`${p} vs ${a} → Vous gagnez !`}
+  else if(w==='ai'){ai++;rpsRes.textContent=`${p} vs ${a} → IA gagne`}
+  else rpsRes.textContent=`${p} vs ${a} → Égalité`;
+  document.getElementById('rps-player-score').textContent=ps;
+  document.getElementById('rps-ai-score').textContent=ai;
+});
+document.getElementById('rps-reset').onclick=()=>{ps=ai=0;document.getElementById('rps-player-score').textContent=0;document.getElementById('rps-ai-score').textContent=0;rpsRes.textContent=''};
+</script>
+</body>
+</html>
