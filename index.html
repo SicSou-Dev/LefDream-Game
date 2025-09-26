@@ -1,76 +1,101 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>LefDream-Game</title>
 
-  <!-- Librairie chessboard.js -->
+  <!-- Librairies Échecs -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/css/chessboard-1.0.0.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/js/chessboard-1.0.0.min.js"></script>
+
   <style>
-  :root {
-    --bg-dark: #05040a;
-    --neon-start: #2eb5ff;
-    --neon-end: #8a35ff;
-    --panel: rgba(255,255,255,0.06);
-    --text: #ffffff;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif}
-  body{background:var(--bg-dark);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-  header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg,var(--neon-start),var(--neon-end))}
-  header .left{display:flex;align-items:center;gap:12px}
-  header img{width:44px;height:44px;border-radius:8px}
-  header input{padding:7px 10px;border-radius:8px;border:none;outline:none;width:180px}
-  main{flex:1;display:flex;flex-direction:column;align-items:center;gap:18px;padding:18px}
-  footer{padding:12px;text-align:center;color:rgba(255,255,255,0.5)}
-  .hamburger{font-size:24px;cursor:pointer}
-  .sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:#0f0f12;padding:22px;transition:left .25s;z-index:2000}
-  .sidebar.open{left:0}
-  .sidebar a{display:block;color:#fff;text-decoration:none;margin:12px 0}
-  .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;width:100%;max-width:980px}
-  .banner{background:linear-gradient(135deg,var(--neon-start),var(--neon-end));border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;color:#020617;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
-  .banner:hover{transform:translateY(-8px) scale(1.03)}
-  section{display:none;flex-direction:column;align-items:center;width:100%;max-width:1000px;margin:auto;padding:12px;opacity:0;transition:opacity .25s}
-  section.active{display:flex;opacity:1}
-  .back-btn{margin:8px;padding:8px 14px;border:none;border-radius:10px;cursor:pointer;background:linear-gradient(90deg,var(--neon-start),var(--neon-end));color:#021;font-weight:700}
-  .global-score{color:#ffd66b;font-weight:700;margin-top:6px}
-  #board{width:90%;max-width:720px;border-radius:12px;margin:8px auto;overflow:hidden}
-  .chess-turn{font-weight:700;margin-bottom:6px}
-  .chessboard .white-1e1d7 { background: #f0d9b5 !important; }
-  .chessboard .black-3c85d { background: #8b5a2b !important; }
-  .chessboard .square-55d63.highlight { box-shadow: inset 0 0 0 4px rgba(46,181,255,0.14); }
-  .chessboard .piece.moved { filter: drop-shadow(0 8px 18px rgba(138,53,255,0.45)); transform: translateY(-4px); }
-  .grid { display:grid; grid-template-columns:repeat(3,120px); grid-template-rows:repeat(3,120px); border:6px solid #fff; border-radius:12px; margin:16px auto; }
-  .cell { display:flex; align-items:center; justify-content:center; font-size:64px; font-weight:900; color:#fff; background:var(--panel); border:2px solid #fff; cursor:pointer; transition: transform .12s, background .12s; user-select:none; }
-  .cell:hover{ transform:scale(1.04); background: rgba(255,255,255,0.06); }
-  .cell.win{ animation: glowPulse 900ms infinite alternate; color:#fff; }
-  @keyframes glowPulse {
-    0% { box-shadow: 0 0 6px #2eb5ff, 0 0 12px #2eb5ff; transform:scale(1); }
-    50% { box-shadow: 0 0 18px #8a35ff, 0 0 36px #8a35ff; transform:scale(1.08); }
-    100% { box-shadow: 0 0 6px #2eb5ff, 0 0 12px #2eb5ff; transform:scale(1); }
-  }
-  .rps-container{text-align:center}
-  .rps-animation{width:180px;height:180px;margin:10px auto;font-size:72px;display:flex;align-items:center;justify-content:center;transition:transform .15s}
-  .rps-btns{display:flex;gap:12px;justify-content:center}
-  .rps-btn{font-size:44px;padding:10px;border-radius:10px;border:none;background:var(--panel);cursor:pointer}
-  .rps-btn:hover{transform:scale(1.15)}
-  .rps-result{min-height:44px;margin-top:8px;font-weight:700}
-  @media(max-width:520px){ .grid{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)} .cell{font-size:40px} }
+    :root { --bg-dark:#05040a; --neon-start:#2eb5ff; --neon-end:#8a35ff; --panel:rgba(255,255,255,0.08); --text-light:#fff; }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+    body{background:var(--bg-dark);color:var(--text-light);min-height:100vh;display:flex;flex-direction:column}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:linear-gradient(90deg,var(--neon-start),var(--neon-end))}
+    header .left{display:flex;align-items:center;gap:10px}
+    header img{width:45px;height:45px;border-radius:8px}
+    header h1{font-size:20px}
+    header input{padding:6px 10px;border-radius:6px;border:none;outline:none;width:180px}
+    .sound-btn{font-size:22px;cursor:pointer;background:none;border:none;color:#fff;margin-left:10px}
+
+    main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+    footer{text-align:center;padding:10px;color:rgba(255,255,255,0.5)}
+
+    /* sidebar */
+    .hamburger{font-size:26px;cursor:pointer}
+    .sidebar{position:fixed;top:0;left:-260px;width:260px;height:100%;background:#111;padding:20px;transition:0.3s;z-index:1000;overflow-y:auto}
+    .sidebar.open{left:0}
+    .sidebar a{display:block;margin:15px 0;color:#fff;text-decoration:none;font-size:18px}
+    .sidebar h3{color:#fff;margin-top:25px;margin-bottom:10px;font-size:16px}
+    .sidebar select{width:100%;padding:8px;border-radius:6px;border:none;outline:none;background:#222;color:#fff}
+
+    /* accueil */
+    .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;width:100%;max-width:900px}
+    .banner{background:linear-gradient(135deg,var(--neon-start),var(--neon-end));border-radius:14px;padding:40px;text-align:center;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.6);transition:.25s;font-size:18px;font-weight:bold}
+    .banner:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,0,0,0.7)}
+
+    section{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:900px;margin:auto;text-align:center}
+    section.active{display:flex}
+    .back-btn{margin:10px;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;background:linear-gradient(90deg,var(--neon-start),var(--neon-end));color:#fff;font-weight:bold}
+
+    /* Jeu Échecs */
+    #board{width:90vw;max-width:800px;margin:20px auto}
+    .white-1e1d7{background:#fff !important;}
+    .black-3c85d{background:#000 !important;}
+
+    /* Jeu Morpion style # */
+    .tictactoe-board{position:relative;width:300px;height:300px;margin:20px auto;}
+    .tictactoe-board::before,.tictactoe-board::after,.tictactoe-board .vline{content:"";position:absolute;background:#fff;}
+    .tictactoe-board::before{top:33.3%;left:0;width:100%;height:4px;}
+    .tictactoe-board::after{top:66.6%;left:0;width:100%;height:4px;}
+    .tictactoe-board .vline:nth-child(1){left:33.3%;top:0;width:4px;height:100%;}
+    .tictactoe-board .vline:nth-child(2){left:66.6%;top:0;width:4px;height:100%;}
+    .cell{position:absolute;width:33.3%;height:33.3%;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:bold;cursor:pointer;color:#fff;}
+    .cell.win{color:yellow;text-shadow:0 0 20px yellow;}
+    .score{margin-top:10px}
+
+    /* Jeu Pierre-Feuille-Ciseaux */
+    .rps-btns{display:flex;gap:15px;margin:20px}
+    .rps-btn{font-size:40px;padding:12px 18px;border:none;border-radius:12px;background:var(--panel);cursor:pointer;transition:.2s}
+    .rps-btn:hover{background:rgba(255,255,255,0.2);transform:scale(1.1)}
+    .rps-result{margin-top:15px;font-size:20px;font-weight:bold;min-height:40px;transition:.3s}
+    .rps-result.win{color:lime;text-shadow:0 0 10px lime}
+    .rps-result.lose{color:red;text-shadow:0 0 10px red}
+    .rps-result.draw{color:yellow;text-shadow:0 0 10px yellow}
+
+    /* Animation plein écran */
+    .fullscreen-anim{transition:transform 0.4s ease, opacity 0.4s ease;transform:scale(0.9);opacity:0.5;}
+    .fullscreen-anim.full{transform:scale(1);opacity:1;}
   </style>
 </head>
 <body>
   <header>
     <div class="left">
       <span class="hamburger">☰</span>
-      <img src="IMG_2727.jpeg" alt="Logo LefDream" />
+      <img src="IMG_2727.jpeg" alt="Logo LefDream"/>
       <h1>LefDream-Game</h1>
     </div>
-    <input id="searchBar" placeholder="Rechercher un jeu..." />
+    <div class="right">
+      <input type="text" id="searchBar" placeholder="Rechercher un jeu...">
+      <button class="sound-btn" id="soundBtn">🔇</button>
+    </div>
   </header>
 
+  <!-- Musique -->
+  <audio id="bgMusic" loop></audio>
+
   <div class="sidebar" id="sidebar">
-    <a href="#" onclick="openSection('home')">Accueil</a>
-    <a href="#" onclick="openSection('create')">Créer un jeu</a>
+    <a href="https://lefdream.netlify.app" target="_blank">Revenir à LefDream</a>
+    <h3>🎵 Choisir la musique</h3>
+    <select id="musicSelect">
+      <option value="">-- Aucune --</option>
+      <option value="https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/2jGm7dKrL2x0hP43T9M2Zy0JIpzIQN0LXW1dwtWn.mp3">Arcade</option>
+      <option value="https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/HyMo4T3L7Jb7Y0sT9XqFZytcQ4P4Qe7yFj6slA9G.mp3">Chill</option>
+      <option value="https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/MsRZ7XkS6u3k0p9t8UjbQw0C9i8v4wX6tAfBq1Lm.mp3">Épique</option>
+    </select>
   </div>
 
   <main>
@@ -78,131 +103,149 @@
       <div class="games-grid" id="gamesList">
         <div class="banner" onclick="openSection('chess')">♟️ Échecs</div>
         <div class="banner" onclick="openSection('tictactoe')">❌⭕ Morpion</div>
-        <div class="banner" onclick="openSection('rps')">✊✋✌️ RPS</div>
+        <div class="banner" onclick="openSection('rps')">✊✋✌️ Pierre-Feuille-Ciseaux</div>
       </div>
-      <div class="global-score" id="globalScore">Scores Globaux — Échecs:0 | Morpion:0 | RPS:0</div>
     </section>
 
     <section id="chess">
-      <h2>♟️ Échecs</h2>
+      <h2>♟️ Jeu d'Échecs</h2>
       <div id="board"></div>
-      <div class="chess-turn" id="chessTurn">Tour: Blanc</div>
-      <div>
-        <button class="back-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
-        <button class="back-btn" onclick="resetChess()">🔄 Réinitialiser</button>
-        <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
-      </div>
+      <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
+      <button class="back-btn" onclick="resetChess()">🔄 Réinitialiser</button>
+      <button class="back-btn" onclick="goFullscreen('board')">⛶ Plein écran</button>
     </section>
 
     <section id="tictactoe">
       <h2>❌⭕ Morpion</h2>
-      <div>
-        <label>Mode</label>
-        <select id="ticMode">
-          <option value="pve">Joueur vs IA</option>
-          <option value="pvp">Joueur vs Joueur</option>
-        </select>
+      <div class="tictactoe-board" id="tttBoard">
+        <div class="vline"></div><div class="vline"></div>
       </div>
-      <div class="grid" id="grid"></div>
       <div class="score" id="tictactoeScore">X:0 | O:0</div>
-      <div>
-        <button class="back-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
-        <button class="back-btn" onclick="resetTicTacToe()">🔄 Rejouer</button>
-        <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
-      </div>
+      <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
+      <button class="back-btn" onclick="resetTicTacToe()">🔄 Rejouer</button>
+      <button class="back-btn" onclick="goFullscreen('tttBoard')">⛶ Plein écran</button>
     </section>
 
     <section id="rps">
       <h2>✊✋✌️ Pierre-Feuille-Ciseaux</h2>
-      <div class="rps-container">
-        <div class="rps-btns">
-          <button class="rps-btn" data-choice="pierre">✊</button>
-          <button class="rps-btn" data-choice="feuille">✋</button>
-          <button class="rps-btn" data-choice="ciseaux">✌️</button>
-        </div>
-        <div class="rps-animation" id="rpsAnimation">✊✋✌️</div>
-        <div class="rps-result" id="rpsResult">Choisis une option !</div>
-        <div class="score" id="rpsScore">Toi:0 | Ordinateur:0</div>
-        <div>
-          <button class="back-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
-          <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
-        </div>
+      <div class="rps-btns">
+        <button class="rps-btn" onclick="playRPS('pierre')">✊</button>
+        <button class="rps-btn" onclick="playRPS('feuille')">✋</button>
+        <button class="rps-btn" onclick="playRPS('ciseaux')">✌️</button>
       </div>
-    </section>
-
-    <section id="create">
-      <h2>➕ Créer un jeu</h2>
-      <form>
-        <input placeholder="Nom du jeu" />
-        <textarea placeholder="Bio du jeu"></textarea>
-        <input type="number" placeholder="Âge légal" />
-        <textarea placeholder="Code du jeu"></textarea>
-      </form>
+      <div class="rps-result" id="rpsResult">Choisis une option !</div>
+      <div class="score" id="rpsScore">Toi:0 | Ordinateur:0</div>
       <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
+      <button class="back-btn" onclick="goFullscreen('rps')">⛶ Plein écran</button>
     </section>
   </main>
 
   <footer>© 2025 LefDream-Game</footer>
 
-  <!-- Scripts externes -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/js/chessboard-1.0.0.min.js"></script>
-
-  <script>
-  // Navigation
+<script>
+  // navigation
   function openSection(id){
-    document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    document.getElementById('sidebar').classList.remove('open');
+    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+    setTimeout(()=>{document.getElementById(id).classList.add("active");},50);
+    document.getElementById("sidebar").classList.remove("open");
   }
-  document.querySelector('.hamburger').onclick=()=>document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('searchBar').oninput=function(){
+  document.querySelector(".hamburger").onclick=()=>document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("searchBar").addEventListener("input",function(){
     const q=this.value.toLowerCase();
-    document.querySelectorAll('#gamesList .banner').forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'block':'none');
-  }
-  function toggleFullScreen(){
-    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
-    else document.exitFullscreen();
-  }
-
-  // Chess
-  let chess=new Chess();
-  let board;
-  let chessWins=0;
-  function updateChessTurn(){document.getElementById('chessTurn').innerText="Tour: "+(chess.turn()==='w'?'Blanc':'Noir');}
-  function resetChess(){chess=new Chess();board.start();updateChessTurn();}
-  function onDrop(src,tgt){
-    let move=chess.move({from:src,to:tgt,promotion:'q'});
-    if(move===null) return 'snapback';
-    updateChessTurn();
-    if(chess.in_checkmate()){chessWins++;alert("Échec et mat !");updateGlobalScore();}
-  }
-  document.addEventListener('DOMContentLoaded',()=>{
-    board=Chessboard('board',{draggable:true,position:'start',onDrop:onDrop});
-    updateChessTurn();
+    document.querySelectorAll("#gamesList .banner").forEach(b=>{
+      b.style.display=b.innerText.toLowerCase().includes(q)?"block":"none";
+    });
   });
 
-  // TicTacToe
-  const grid=document.getElementById('grid');
-  let cells=[],turn='X',scoreX=0,scoreO=0,modePvE=true;
-  document.getElementById('ticMode').onchange=function(){modePvE=this.value==='pve';resetTicTacToe();}
-  function initTicTacToe(){grid.innerHTML='';cells=[];for(let i=0;i<9;i++){let d=document.createElement('div');d.className='cell';d.onclick=()=>playCell(i);grid.appendChild(d);cells.push(d);}turn='X';}
+  // Plein écran avec animation
+  function goFullscreen(id){
+    let el=document.getElementById(id);
+    el.classList.add("fullscreen-anim");
+    setTimeout(()=>el.classList.add("full"),20);
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if(el.msRequestFullscreen) el.msRequestFullscreen();
+  }
+  document.addEventListener("fullscreenchange",()=>{
+    if(!document.fullscreenElement){
+      document.querySelectorAll(".fullscreen-anim").forEach(el=>{
+        el.classList.remove("full");
+        setTimeout(()=>el.classList.remove("fullscreen-anim"),300);
+      });
+    }
+  });
+
+  // Échecs
+  let chess=new Chess();
+  let board=Chessboard("board",{draggable:true,position:"start",
+    onDrop:(s,t)=>{let m=chess.move({from:s,to:t,promotion:"q"});if(m===null)return "snapback";}
+  });
+  function resetChess(){chess=new Chess();board.start();}
+
+  // Morpion
+  const ttt=document.getElementById("tttBoard");
+  let cells=[],turn="X",scoreX=0,scoreO=0;
+  function initTicTacToe(){
+    ttt.querySelectorAll(".cell").forEach(c=>c.remove());cells=[];
+    for(let r=0;r<3;r++){for(let c=0;c<3;c++){
+      const cell=document.createElement("div");
+      cell.className="cell";cell.style.top=(r*33.3)+"%";cell.style.left=(c*33.3)+"%";
+      cell.onclick=()=>playCell(r*3+c);ttt.appendChild(cell);cells.push(cell);}}
+  }
+  function playCell(i){
+    if(cells[i].innerText!=="")return;cells[i].innerText=turn;
+    if(checkWin(turn)){highlightWin(turn);if(turn==="X")scoreX++;else scoreO++;
+      document.getElementById("tictactoeScore").innerText=`X:${scoreX} | O:${scoreO}`;
+      setTimeout(()=>resetTicTacToe(),1500);}
+    turn=(turn==="X")?"O":"X";
+  }
   function checkWin(p){const w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return w.find(c=>c.every(i=>cells[i].innerText===p));}
-  function playCell(i){if(cells[i].innerText!=='')return;cells[i].innerText=turn;if(checkWin(turn)){highlightWin(turn);updateScore(turn);return;}if(cells.every(c=>c.innerText!=='')){resetTicTacToe();return;}if(modePvE&&turn==='X'){turn='O';setTimeout(aiPlay,300);}else turn=turn==='X'?'O':'X';}
-  function highlightWin(p){checkWin(p).forEach(i=>cells[i].classList.add('win'));setTimeout(resetTicTacToe,1000);}
-  function updateScore(p){if(p==='X')scoreX++;else scoreO++;document.getElementById('tictactoeScore').innerText=`X:${scoreX} | O:${scoreO}`;updateGlobalScore();}
-  function aiPlay(){let empty=cells.map((c,i)=>c.innerText===''?i:null).filter(i=>i!==null);let choice=empty[Math.floor(Math.random()*empty.length)];cells[choice].innerText='O';if(checkWin('O')){highlightWin('O');updateScore('O');return;}turn='X';}
-  function resetTicTacToe(){initTicTacToe();}
+  function highlightWin(p){let comb=checkWin(p);comb.forEach(i=>cells[i].classList.add("win"));}
+  function resetTicTacToe(){turn="X";initTicTacToe();}
   initTicTacToe();
 
-  // RPS
-  let rpsUser=0,rpsBot=0,choices=['pierre','feuille','ciseaux'];
-  document.querySelectorAll('.rps-btn').forEach(b=>b.onclick=()=>playRPS(b.dataset.choice));
-  function playRPS(choice){let bot=choices[Math.floor(Math.random()*3)];document.getElementById('rpsAnimation').innerText=bot;let res="";if(choice===bot)res="Égalité";else if((choice==='pierre'&&bot==='ciseaux')||(choice==='feuille'&&bot==='pierre')||(choice==='ciseaux'&&bot==='feuille')){res="Tu gagnes";rpsUser++;}else{res="Ordinateur gagne";rpsBot++;}document.getElementById('rpsResult').innerText=`Toi:${choice} | Ordi:${bot} → ${res}`;document.getElementById('rpsScore').innerText=`Toi:${rpsUser} | Ordi:${rpsBot}`;updateGlobalScore();}
-  
-  // Global score
-  function updateGlobalScore(){document.getElementById('globalScore').innerText=`Scores Globaux — Échecs:${chessWins} | Morpion:${scoreX+scoreO} | RPS:${rpsUser+rpsBot}`;}
-  </script>
+  // Pierre-Feuille-Ciseaux
+  let rpsUser=0,rpsBot=0;
+  function playRPS(choice){
+    const o=["pierre","feuille","ciseaux"],bot=o[Math.floor(Math.random()*3)];
+    let res="",cls="";if(choice===bot){res="Égalité !";cls="draw";}
+    else if((choice==="pierre"&&bot==="ciseaux")||(choice==="feuille"&&bot==="pierre")||(choice==="ciseaux"&&bot==="feuille")){res="Tu gagnes 🎉";cls="win";rpsUser++;}
+    else{res="L'ordinateur gagne 🤖";cls="lose";rpsBot++;}
+    document.getElementById("rpsResult").innerText=`Toi: ${choice} | Ordinateur: ${bot} → ${res}`;
+    document.getElementById("rpsResult").className="rps-result "+cls;
+    document.getElementById("rpsScore").innerText=`Toi:${rpsUser} | Ordinateur:${rpsBot}`;
+  }
+
+  // Musique
+  const music=document.getElementById("bgMusic");
+  const soundBtn=document.getElementById("soundBtn");
+  const musicSelect=document.getElementById("musicSelect");
+  let musicOn=false;
+
+  soundBtn.onclick=()=>{
+    if(!musicOn){
+      if(music.src){music.volume=0.5;music.play();musicOn=true;soundBtn.textContent="🔊";}
+    } else {
+      music.pause();musicOn=false;soundBtn.textContent="🔇";
+    }
+  }
+
+  musicSelect.onchange=()=>{
+    const url=musicSelect.value;
+    if(url){
+      music.src=url;
+      music.volume=0.5;
+      music.play();
+      musicOn=true;
+      soundBtn.textContent="🔊";
+    } else {
+      music.pause();
+      musicOn=false;
+      soundBtn.textContent="🔇";
+    }
+  }
+</script>
 </body>
 </html>
+
 
