@@ -1,520 +1,208 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LefDream-Game Ultimate — Final</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LefDream-Game</title>
 
-<!-- chessboard.js + chess.js -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/css/chessboard-1.0.0.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/js/chessboard-1.0.0.min.js"></script>
-
-<style>
-:root{
-  --bg-dark: #05040a;
-  --neon-start: #2eb5ff;
-  --neon-end: #8a35ff;
-  --panel: rgba(255,255,255,0.06);
-  --text: #ffffff;
-}
-
-/* Reset + layout */
-*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Helvetica,Arial,sans-serif}
-body{background:var(--bg-dark);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg,var(--neon-start),var(--neon-end));box-shadow:0 6px 20px rgba(0,0,0,0.4)}
-header .left{display:flex;align-items:center;gap:12px}
-header img{width:44px;height:44px;border-radius:8px;object-fit:cover}
-header h1{font-size:18px}
-header input{padding:7px 10px;border-radius:8px;border:none;outline:none;width:180px}
-
-/* main */
-main{flex:1;display:flex;flex-direction:column;align-items:center;gap:18px;padding:20px}
-footer{padding:12px;text-align:center;color:rgba(255,255,255,0.5)}
-
-/* sidebar/hamburger */
-.hamburger{font-size:24px;cursor:pointer}
-.sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:#0f0f12;padding:22px;transition:left .25s;z-index:2000;box-shadow:6px 0 30px rgba(0,0,0,0.6)}
-.sidebar.open{left:0}
-.sidebar a{display:block;color:#fff;text-decoration:none;margin:12px 0;padding:8px;border-radius:8px}
-
-/* homepage banners */
-.games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;width:100%;max-width:980px}
-.banner{background:linear-gradient(135deg,var(--neon-start),var(--neon-end));border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;color:#020617;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,0.6);transition:transform .2s,box-shadow .2s}
-.banner:hover{transform:translateY(-8px) scale(1.03);box-shadow:0 20px 50px rgba(46,181,255,0.25)}
-
-/* sections */
-section{display:none;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;max-width:1000px;margin:auto;padding:12px;opacity:0;transition:opacity .25s}
-section.active{display:flex;opacity:1}
-.back-btn{margin:8px;padding:8px 14px;border:none;border-radius:10px;cursor:pointer;background:linear-gradient(90deg,var(--neon-start),var(--neon-end));color:#021; font-weight:700}
-
-/* global score */
-.global-score{color:#ffd66b;font-weight:700;margin-top:6px}
-
-/* ---------- CHESS styling ---------- */
-.chess-area{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
-#board{width:90%;max-width:720px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#0b0b0c, #0a0a10);box-shadow:0 18px 50px rgba(0,0,0,0.65)}
-.chess-turn{font-weight:700;margin-bottom:6px}
-
-/* override chessboard square colors (chessboard.js uses specific classes) */
-/* classnames from chessboard.js v1.0.0: .white-1e1d7 .black-3c85d (may vary across builds) */
-.chessboard .white-1e1d7 { background: #f0d9b5 !important; }   /* light squares */
-.chessboard .black-3c85d { background: #8b5a2b !important; }   /* dark squares */
-.chessboard .square-55d63 { box-sizing:border-box; } /* general */
-
-/* highlight for legal moves */
-.chessboard .highlight {
-  box-shadow: inset 0 0 0 3px rgba(46,181,255,0.18);
-  transition: box-shadow .12s;
-}
-
-/* piece glow on move */
-.chessboard .piece.moved {
-  filter: drop-shadow(0 6px 18px rgba(138,53,255,0.45));
-  transition: filter .2s, transform .15s;
-  transform: translateY(-4px);
-}
-
-/* responsive board */
-@media(max-width:700px){
-  #board{max-width:440px}
-}
-
-/* ---------- TIC TAC TOE (look # and glow) ---------- */
-.grid { display:grid; grid-template-columns:repeat(3,120px); grid-template-rows:repeat(3,120px); gap:0; border:6px solid #fff; border-radius:12px; background:transparent; }
-.cell { display:flex; align-items:center; justify-content:center; font-size:64px; font-weight:900; color:#fff; background:var(--panel); border:2px solid #fff; cursor:pointer; transition: transform .12s, background .12s; user-select:none; }
-.cell:hover{ transform:scale(1.04); background: rgba(255,255,255,0.06); }
-.cell.win { animation: glowPulse 900ms infinite alternate; color:#fff; }
-@keyframes glowPulse {
-  0% { box-shadow: 0 0 6px #2eb5ff, 0 0 12px #2eb5ff; transform:scale(1); }
-  50% { box-shadow: 0 0 18px #8a35ff, 0 0 36px #8a35ff; transform:scale(1.1); }
-  100% { box-shadow: 0 0 6px #2eb5ff, 0 0 12px #2eb5ff; transform:scale(1); }
-}
-
-/* small screens */
-@media(max-width:520px){
-  .grid{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)}
-  .cell{font-size:40px}
-}
-
-/* ---------- RPS styling ---------- */
-.rps-container{text-align:center}
-.rps-animation{width:180px;height:180px;margin:10px auto;font-size:72px;display:flex;align-items:center;justify-content:center;transition:transform .15s,opacity .15s}
-.rps-btns{display:flex;gap:12px;justify-content:center}
-.rps-btn{font-size:44px;padding:10px;border-radius:10px;border:none;background:var(--panel);cursor:pointer;transition:transform .12s}
-.rps-btn:hover{transform:scale(1.15)}
-.rps-result{min-height:44px;margin-top:8px;font-weight:700}
-
-/* small helper */
-.controls-row{display:flex;gap:10px;align-items:center;margin:8px 0}
-</style>
+  <!-- Librairie chessboard.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/css/chessboard-1.0.0.min.css"/>
+  <style>
+  :root {
+    --bg-dark: #05040a;
+    --neon-start: #2eb5ff;
+    --neon-end: #8a35ff;
+    --panel: rgba(255,255,255,0.06);
+    --text: #ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif}
+  body{background:var(--bg-dark);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg,var(--neon-start),var(--neon-end))}
+  header .left{display:flex;align-items:center;gap:12px}
+  header img{width:44px;height:44px;border-radius:8px}
+  header input{padding:7px 10px;border-radius:8px;border:none;outline:none;width:180px}
+  main{flex:1;display:flex;flex-direction:column;align-items:center;gap:18px;padding:18px}
+  footer{padding:12px;text-align:center;color:rgba(255,255,255,0.5)}
+  .hamburger{font-size:24px;cursor:pointer}
+  .sidebar{position:fixed;top:0;left:-280px;width:280px;height:100%;background:#0f0f12;padding:22px;transition:left .25s;z-index:2000}
+  .sidebar.open{left:0}
+  .sidebar a{display:block;color:#fff;text-decoration:none;margin:12px 0}
+  .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;width:100%;max-width:980px}
+  .banner{background:linear-gradient(135deg,var(--neon-start),var(--neon-end));border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;color:#020617;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  .banner:hover{transform:translateY(-8px) scale(1.03)}
+  section{display:none;flex-direction:column;align-items:center;width:100%;max-width:1000px;margin:auto;padding:12px;opacity:0;transition:opacity .25s}
+  section.active{display:flex;opacity:1}
+  .back-btn{margin:8px;padding:8px 14px;border:none;border-radius:10px;cursor:pointer;background:linear-gradient(90deg,var(--neon-start),var(--neon-end));color:#021;font-weight:700}
+  .global-score{color:#ffd66b;font-weight:700;margin-top:6px}
+  #board{width:90%;max-width:720px;border-radius:12px;margin:8px auto;overflow:hidden}
+  .chess-turn{font-weight:700;margin-bottom:6px}
+  .chessboard .white-1e1d7 { background: #f0d9b5 !important; }
+  .chessboard .black-3c85d { background: #8b5a2b !important; }
+  .chessboard .square-55d63.highlight { box-shadow: inset 0 0 0 4px rgba(46,181,255,0.14); }
+  .chessboard .piece.moved { filter: drop-shadow(0 8px 18px rgba(138,53,255,0.45)); transform: translateY(-4px); }
+  .grid { display:grid; grid-template-columns:repeat(3,120px); grid-template-rows:repeat(3,120px); border:6px solid #fff; border-radius:12px; margin:16px auto; }
+  .cell { display:flex; align-items:center; justify-content:center; font-size:64px; font-weight:900; color:#fff; background:var(--panel); border:2px solid #fff; cursor:pointer; transition: transform .12s, background .12s; user-select:none; }
+  .cell:hover{ transform:scale(1.04); background: rgba(255,255,255,0.06); }
+  .cell.win{ animation: glowPulse 900ms infinite alternate; color:#fff; }
+  @keyframes glowPulse {
+    0% { box-shadow: 0 0 6px #2eb5ff, 0 0 12px #2eb5ff; transform:scale(1); }
+    50% { box-shadow: 0 0 18px #8a35ff, 0 0 36px #8a35ff; transform:scale(1.08); }
+    100% { box-shadow: 0 0 6px #2eb5ff, 0 0 12px #2eb5ff; transform:scale(1); }
+  }
+  .rps-container{text-align:center}
+  .rps-animation{width:180px;height:180px;margin:10px auto;font-size:72px;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+  .rps-btns{display:flex;gap:12px;justify-content:center}
+  .rps-btn{font-size:44px;padding:10px;border-radius:10px;border:none;background:var(--panel);cursor:pointer}
+  .rps-btn:hover{transform:scale(1.15)}
+  .rps-result{min-height:44px;margin-top:8px;font-weight:700}
+  @media(max-width:520px){ .grid{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)} .cell{font-size:40px} }
+  </style>
 </head>
 <body>
-
-<header>
-  <div class="left">
-    <span class="hamburger">☰</span>
-    <img src="IMG_2727.jpeg" alt="Logo LefDream" />
-    <h1>LefDream-Game Ultimate</h1>
-  </div>
-  <input id="searchBar" placeholder="Rechercher un jeu..." />
-</header>
-
-<!-- sidebar -->
-<div class="sidebar" id="sidebar">
-  <a href="#" onclick="openSection('home')">Accueil</a>
-  <a href="#" onclick="openSection('create')">Créer un jeu</a>
-</div>
-
-<main>
-  <!-- HOME -->
-  <section id="home" class="active">
-    <div class="games-grid" id="gamesList">
-      <div class="banner" onclick="openSection('chess')">♟️ Échecs</div>
-      <div class="banner" onclick="openSection('tictactoe')">❌⭕ Morpion</div>
-      <div class="banner" onclick="openSection('rps')">✊✋✌️ Pierre-Feuille-Ciseaux</div>
+  <header>
+    <div class="left">
+      <span class="hamburger">☰</span>
+      <img src="IMG_2727.jpeg" alt="Logo LefDream" />
+      <h1>LefDream-Game</h1>
     </div>
-    <div class="global-score" id="globalScore">Scores Globaux — Échecs:0 | Morpion:0 | RPS:0</div>
-  </section>
+    <input id="searchBar" placeholder="Rechercher un jeu..." />
+  </header>
 
-  <!-- CHESS -->
-  <section id="chess">
-    <h2>♟️ Échecs</h2>
-    <div class="chess-area">
+  <div class="sidebar" id="sidebar">
+    <a href="#" onclick="openSection('home')">Accueil</a>
+    <a href="#" onclick="openSection('create')">Créer un jeu</a>
+  </div>
+
+  <main>
+    <section id="home" class="active">
+      <div class="games-grid" id="gamesList">
+        <div class="banner" onclick="openSection('chess')">♟️ Échecs</div>
+        <div class="banner" onclick="openSection('tictactoe')">❌⭕ Morpion</div>
+        <div class="banner" onclick="openSection('rps')">✊✋✌️ RPS</div>
+      </div>
+      <div class="global-score" id="globalScore">Scores Globaux — Échecs:0 | Morpion:0 | RPS:0</div>
+    </section>
+
+    <section id="chess">
+      <h2>♟️ Échecs</h2>
       <div id="board"></div>
       <div class="chess-turn" id="chessTurn">Tour: Blanc</div>
-      <div class="controls-row">
+      <div>
         <button class="back-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
         <button class="back-btn" onclick="resetChess()">🔄 Réinitialiser</button>
         <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- TIC TAC TOE -->
-  <section id="tictactoe">
-    <h2>❌⭕ Morpion</h2>
-    <div class="controls-row">
-      <label style="font-weight:700">Mode</label>
-      <select id="ticMode">
-        <option value="pve">Joueur vs IA</option>
-        <option value="pvp">Joueur vs Joueur</option>
-      </select>
-      <button class="back-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
-      <button class="back-btn" onclick="resetTicTacToe()">🔄 Rejouer</button>
-      <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
-    </div>
-    <div class="grid" id="grid"></div>
-    <div class="score" id="tictactoeScore">X:0 | O:0</div>
-  </section>
-
-  <!-- RPS -->
-  <section id="rps">
-    <h2>✊✋✌️ Pierre-Feuille-Ciseaux</h2>
-    <div class="rps-container">
-      <div class="rps-btns">
-        <button class="rps-btn" data-choice="pierre">✊</button>
-        <button class="rps-btn" data-choice="feuille">✋</button>
-        <button class="rps-btn" data-choice="ciseaux">✌️</button>
+    <section id="tictactoe">
+      <h2>❌⭕ Morpion</h2>
+      <div>
+        <label>Mode</label>
+        <select id="ticMode">
+          <option value="pve">Joueur vs IA</option>
+          <option value="pvp">Joueur vs Joueur</option>
+        </select>
       </div>
-      <div class="rps-animation" id="rpsAnimation">✊✋✌️</div>
-      <div class="rps-result" id="rpsResult">Choisis une option !</div>
-      <div class="score" id="rpsScore">Toi:0 | Ordinateur:0</div>
-      <div style="margin-top:10px">
+      <div class="grid" id="grid"></div>
+      <div class="score" id="tictactoeScore">X:0 | O:0</div>
+      <div>
         <button class="back-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
+        <button class="back-btn" onclick="resetTicTacToe()">🔄 Rejouer</button>
         <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- CREATE (stub) -->
-  <section id="create">
-    <h2>➕ Créer un jeu</h2>
-    <form style="width:100%;max-width:520px;background:var(--panel);padding:14px;border-radius:10px;margin-top:12px">
-      <input placeholder="Nom du jeu" style="padding:8px;border-radius:8px;border:none;width:100%;margin-bottom:8px"/>
-      <textarea placeholder="Bio du jeu" rows="3" style="padding:8px;border-radius:8px;border:none;width:100%;margin-bottom:8px"></textarea>
-      <input type="number" placeholder="Âge légal" min="3" max="99" style="padding:8px;border-radius:8px;border:none;width:100%;margin-bottom:8px"/>
-      <textarea placeholder="Code du jeu (coller ici)" rows="6" style="padding:8px;border-radius:8px;border:none;width:100%;margin-bottom:8px"></textarea>
-      <div style="display:flex;gap:10px">
-        <button class="back-btn" type="button">Envoyer (désactivé)</button>
-        <button class="back-btn" type="button" onclick="openSection('home')">⬅ Retour</button>
+    <section id="rps">
+      <h2>✊✋✌️ Pierre-Feuille-Ciseaux</h2>
+      <div class="rps-container">
+        <div class="rps-btns">
+          <button class="rps-btn" data-choice="pierre">✊</button>
+          <button class="rps-btn" data-choice="feuille">✋</button>
+          <button class="rps-btn" data-choice="ciseaux">✌️</button>
+        </div>
+        <div class="rps-animation" id="rpsAnimation">✊✋✌️</div>
+        <div class="rps-result" id="rpsResult">Choisis une option !</div>
+        <div class="score" id="rpsScore">Toi:0 | Ordinateur:0</div>
+        <div>
+          <button class="back-btn" onclick="toggleFullScreen()">⛶ Plein écran</button>
+          <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
+        </div>
       </div>
-    </form>
-  </section>
+    </section>
 
-</main>
+    <section id="create">
+      <h2>➕ Créer un jeu</h2>
+      <form>
+        <input placeholder="Nom du jeu" />
+        <textarea placeholder="Bio du jeu"></textarea>
+        <input type="number" placeholder="Âge légal" />
+        <textarea placeholder="Code du jeu"></textarea>
+      </form>
+      <button class="back-btn" onclick="openSection('home')">⬅ Retour</button>
+    </section>
+  </main>
 
-<footer>© 2025 LefDream-Game Ultimate</footer>
+  <footer>© 2025 LefDream-Game</footer>
 
-<script>
-/* -------------------- NAVIGATION + SEARCH + SIDEBAR -------------------- */
-function openSection(id){
-  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
-  setTimeout(()=>document.getElementById(id).classList.add('active'),50);
-  document.getElementById('sidebar').classList.remove('open');
-}
-document.querySelector('.hamburger').onclick = ()=>document.getElementById('sidebar').classList.toggle('open');
+  <!-- Scripts externes -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/js/chessboard-1.0.0.min.js"></script>
 
-document.getElementById('searchBar').addEventListener('input', function(){
-  const q = this.value.toLowerCase();
-  document.querySelectorAll('#gamesList .banner').forEach(b=>{
-    b.style.display = b.innerText.toLowerCase().includes(q) ? 'block' : 'none';
+  <script>
+  // Navigation
+  function openSection(id){
+    document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+  }
+  document.querySelector('.hamburger').onclick=()=>document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('searchBar').oninput=function(){
+    const q=this.value.toLowerCase();
+    document.querySelectorAll('#gamesList .banner').forEach(b=>b.style.display=b.innerText.toLowerCase().includes(q)?'block':'none');
+  }
+  function toggleFullScreen(){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+
+  // Chess
+  let chess=new Chess();
+  let board;
+  let chessWins=0;
+  function updateChessTurn(){document.getElementById('chessTurn').innerText="Tour: "+(chess.turn()==='w'?'Blanc':'Noir');}
+  function resetChess(){chess=new Chess();board.start();updateChessTurn();}
+  function onDrop(src,tgt){
+    let move=chess.move({from:src,to:tgt,promotion:'q'});
+    if(move===null) return 'snapback';
+    updateChessTurn();
+    if(chess.in_checkmate()){chessWins++;alert("Échec et mat !");updateGlobalScore();}
+  }
+  document.addEventListener('DOMContentLoaded',()=>{
+    board=Chessboard('board',{draggable:true,position:'start',onDrop:onDrop});
+    updateChessTurn();
   });
-});
 
-/* -------------------- FULLSCREEN -------------------- */
-function toggleFullScreen(){
-  const elem = document.documentElement;
-  if(!document.fullscreenElement) elem.requestFullscreen().catch(()=>{}); else document.exitFullscreen();
-}
-
-/* -------------------- CHESS (board + moves highlighting) -------------------- */
-let chess = new Chess();
-let chessBoard = null;
-let chessWins = 0;
-
-function removeHighlights(){
-  const squares = document.querySelectorAll('#board .square-55d63');
-  squares.forEach(sq => sq.classList.remove('highlight'));
-}
-
-function addHighlight(square){
-  const el = document.querySelector(`#board .square-${square}`);
-  if(el) el.classList.add('highlight');
-}
-
-function onMouseoverSquare(square, piece){
-  // show legal moves from this square
-  const moves = chess.moves({square: square, verbose: true});
-  if(moves.length === 0) return;
-  addHighlight(square); // highlight origin lightly
-  moves.forEach(m => addHighlight(m.to));
-}
-
-function onMouseoutSquare(square, piece){
-  removeHighlights();
-}
-
-function onDragStart(source, piece, position, orientation){
-  if(chess.game_over()) return false;
-  // block moving opponent's pieces
-  if((chess.turn() === 'w' && piece.search(/^b/) !== -1) || (chess.turn() === 'b' && piece.search(/^w/) !== -1)) return false;
-}
-
-function onDrop(source, target){
-  const move = chess.move({from: source, to: target, promotion: 'q'});
-  if(move === null) return 'snapback';
-  // mark moved piece for a moment
-  setTimeout(()=> {
-    const squareEl = document.querySelector(`#board .square-${move.to} .piece`);
-    if(squareEl) squareEl.classList.add('moved');
-    setTimeout(()=>{ if(squareEl) squareEl.classList.remove('moved'); }, 350);
-  }, 30);
-
-  // sound (optional)
-  try{ new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg').play(); }catch(e){}
-
-  updateChessTurn();
-  if(chess.in_checkmate()){
-    chessWins++;
-    setTimeout(()=>{ alert('Échec et mat ! 🎉'); updateGlobalScore(); }, 120);
-  } else if(chess.in_check()){
-    try{ new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg').play(); }catch(e){}
-  }
-}
-
-function onSnapEnd(){
-  chessBoard.position(chess.fen());
-}
-
-function initChessBoard(){
-  const cfg = {
-    draggable: true,
-    position: 'start',
-    onDragStart: onDragStart,
-    onDrop: onDrop,
-    onSnapEnd: onSnapEnd,
-    onMouseoutSquare: onMouseoutSquare,
-    onMouseoverSquare: onMouseoverSquare,
-    moveSpeed: 'fast'
-  };
-  chessBoard = Chessboard('board', cfg);
-  updateChessTurn();
-}
-
-function resetChess(){
-  chess = new Chess();
-  chessBoard.start();
-  updateChessTurn();
-  updateGlobalScore();
-}
-
-function updateChessTurn(){
-  document.getElementById('chessTurn').innerText = 'Tour: ' + (chess.turn() === 'w' ? 'Blanc' : 'Noir');
-}
-
-/* -------------------- TIC TAC TOE (grid # + PvE AI simple) -------------------- */
-const gridEl = document.getElementById('grid');
-let cells = [];
-let turn = 'X';
-let scoreX = 0, scoreO = 0;
-let modePvE = true; // default (sync with select)
-
-document.getElementById('ticMode').addEventListener('change', function(){
-  modePvE = this.value === 'pve';
-  resetTicTacToe();
-});
-
-function initTicTacToe(){
-  gridEl.innerHTML = '';
-  cells = [];
-  for(let i=0;i<9;i++){
-    const div = document.createElement('div');
-    div.className = 'cell';
-    div.dataset.index = i;
-    div.onclick = ()=> playCell(i);
-    gridEl.appendChild(div);
-    cells.push(div);
-  }
-  turn = 'X';
-}
-
-function playCell(i){
-  if(cells[i].innerText !== '') return;
-  cells[i].innerText = turn;
-  cells[i].style.transform = 'scale(0.6)';
-  setTimeout(()=>cells[i].style.transform = 'scale(1)', 80);
-
-  if(checkWin(turn)){
-    highlightWin(turn);
-    updateScore(turn);
-    return; // reset handled in updateScore via timeout
-  }
-
-  // draw?
-  if(cells.every(c=>c.innerText !== '')){
-    // tie - small flash then reset
-    flashDraw();
-    setTimeout(()=>resetTicTacToe(), 900);
-    return;
-  }
-
-  // next turn
-  if(modePvE && turn === 'X'){
-    // player is X, AI is O
-    turn = 'O';
-    setTimeout(aiPlay, 280);
-  } else {
-    turn = (turn === 'X') ? 'O' : 'X';
-  }
-}
-
-function aiPlay(){
-  const empty = cells.map((c,i)=> c.innerText === '' ? i : null).filter(i=>i!==null);
-  if(empty.length === 0) return;
-  // simple strategy: if can win in one, take it; else if player can win next, block; else random
-  // check win-for function
-  const tryWin = (player, idx) => {
-    // simulate
-    const copy = cells.map(c=>c.innerText);
-    copy[idx] = player;
-    return isWinningArray(copy, player);
-  };
-
-  // 1) win
-  for(const i of empty){
-    if(tryWin('O', i)){
-      chooseAIMove(i);
-      return;
-    }
-  }
-  // 2) block
-  for(const i of empty){
-    if(tryWin('X', i)){
-      chooseAIMove(i);
-      return;
-    }
-  }
-  // 3) take center if available
-  if(empty.includes(4)){
-    chooseAIMove(4); return;
-  }
-  // 4) random corner
-  const corners = empty.filter(i=>[0,2,6,8].includes(i));
-  if(corners.length>0){
-    chooseAIMove(corners[Math.floor(Math.random()*corners.length)]);
-    return;
-  }
-  // 5) fallback random
-  chooseAIMove(empty[Math.floor(Math.random()*empty.length)]);
-}
-
-function chooseAIMove(i){
-  cells[i].innerText = 'O';
-  cells[i].style.transform = 'scale(0.6)'; setTimeout(()=>cells[i].style.transform='scale(1)',80);
-  if(checkWin('O')){ highlightWin('O'); updateScore('O'); return; }
-  if(cells.every(c=>c.innerText !== '')){ flashDraw(); setTimeout(()=>resetTicTacToe(),900); return; }
-  turn = 'X';
-}
-
-// helper to check winning on an array (used by AI)
-function isWinningArray(arr, p){
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  return wins.some(c=>c.every(i=>arr[i] === p));
-}
-
-function checkWin(p){
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  return wins.find(c=>c.every(i=>cells[i].innerText === p));
-}
-
-function highlightWin(p){
-  const comb = checkWin(p);
-  if(!comb) return;
-  comb.forEach(i=>{
-    cells[i].classList.add('win');
-  });
-  // reset after short delay
-  setTimeout(()=>resetTicTacToe(), 1400);
-}
-
-function updateScore(p){
-  if(p === 'X') scoreX++; else scoreO++;
-  document.getElementById('tictactoeScore').innerText = `X:${scoreX} | O:${scoreO}`;
-  updateGlobalScore();
-  // small sound/flash could be added
-}
-
-function flashDraw(){
-  // brief visual when draw
-  cells.forEach(c=> c.style.opacity = 0.6 );
-  setTimeout(()=> cells.forEach(c=> c.style.opacity = 1), 450);
-}
-
-function resetTicTacToe(){
+  // TicTacToe
+  const grid=document.getElementById('grid');
+  let cells=[],turn='X',scoreX=0,scoreO=0,modePvE=true;
+  document.getElementById('ticMode').onchange=function(){modePvE=this.value==='pve';resetTicTacToe();}
+  function initTicTacToe(){grid.innerHTML='';cells=[];for(let i=0;i<9;i++){let d=document.createElement('div');d.className='cell';d.onclick=()=>playCell(i);grid.appendChild(d);cells.push(d);}turn='X';}
+  function checkWin(p){const w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return w.find(c=>c.every(i=>cells[i].innerText===p));}
+  function playCell(i){if(cells[i].innerText!=='')return;cells[i].innerText=turn;if(checkWin(turn)){highlightWin(turn);updateScore(turn);return;}if(cells.every(c=>c.innerText!=='')){resetTicTacToe();return;}if(modePvE&&turn==='X'){turn='O';setTimeout(aiPlay,300);}else turn=turn==='X'?'O':'X';}
+  function highlightWin(p){checkWin(p).forEach(i=>cells[i].classList.add('win'));setTimeout(resetTicTacToe,1000);}
+  function updateScore(p){if(p==='X')scoreX++;else scoreO++;document.getElementById('tictactoeScore').innerText=`X:${scoreX} | O:${scoreO}`;updateGlobalScore();}
+  function aiPlay(){let empty=cells.map((c,i)=>c.innerText===''?i:null).filter(i=>i!==null);let choice=empty[Math.floor(Math.random()*empty.length)];cells[choice].innerText='O';if(checkWin('O')){highlightWin('O');updateScore('O');return;}turn='X';}
+  function resetTicTacToe(){initTicTacToe();}
   initTicTacToe();
-}
 
-/* -------------------- RPS (animated) -------------------- */
-let rpsUser = 0, rpsBot = 0;
-const rpsChoices = ['pierre','feuille','ciseaux'];
-
-document.querySelectorAll('.rps-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=> playRPS(btn.dataset.choice));
-});
-
-function playRPS(choice){
-  const anim = document.getElementById('rpsAnimation');
-  const res = document.getElementById('rpsResult');
-  anim.innerText = '✊✋✌️';
-  res.innerText = '3️⃣ 2️⃣ 1️⃣ ...';
-  res.className = 'rps-result';
-  let count = 3;
-  const iv = setInterval(()=>{
-    anim.innerText = rpsChoices[Math.floor(Math.random()*3)];
-    count--;
-    if(count <= 0){
-      clearInterval(iv);
-      showRPSResult(choice);
-    }
-  }, 280);
-}
-
-function showRPSResult(choice){
-  const bot = rpsChoices[Math.floor(Math.random()*3)];
-  const anim = document.getElementById('rpsAnimation');
-  anim.innerText = bot;
-  anim.style.transform = 'scale(1.18)';
-  setTimeout(()=> anim.style.transform = 'scale(1)', 220);
-
-  let resultText = '', cls = '';
-  if(choice === bot){ resultText = 'Égalité !'; cls = 'draw'; }
-  else if((choice==='pierre'&&bot==='ciseaux')||(choice==='feuille'&&bot==='pierre')||(choice==='ciseaux'&&bot==='feuille')){
-    resultText = 'Tu gagnes 🎉'; cls = 'win'; rpsUser++;
-  } else { resultText = "L'ordinateur gagne 🤖"; cls = 'lose'; rpsBot++; }
-
-  const res = document.getElementById('rpsResult');
-  res.innerText = `Toi: ${choice} | Ordinateur: ${bot} → ${resultText}`;
-  res.className = 'rps-result ' + cls;
-  document.getElementById('rpsScore').innerText = `Toi:${rpsUser} | Ordinateur:${rpsBot}`;
-  updateGlobalScore();
-}
-
-/* -------------------- GLOBAL SCORE -------------------- */
-function updateGlobalScore(){
-  // chessWins, morpion wins (scoreX+scoreO), rps rounds (rpsUser+rpsBot)
-  const chessVal = chessWins;
-  const morpionVal = scoreX + scoreO;
-  const rpsVal = rpsUser + rpsBot;
-  document.getElementById('globalScore').innerText = `Scores Globaux — Échecs:${chessVal} | Morpion:${morpionVal} | RPS:${rpsVal}`;
-}
-
-/* -------------------- INIT -------------------- */
-initTicTacToe();
-initChessBoard();
-updateGlobalScore();
-updateChessTurn();
-
-</script>
+  // RPS
+  let rpsUser=0,rpsBot=0,choices=['pierre','feuille','ciseaux'];
+  document.querySelectorAll('.rps-btn').forEach(b=>b.onclick=()=>playRPS(b.dataset.choice));
+  function playRPS(choice){let bot=choices[Math.floor(Math.random()*3)];document.getElementById('rpsAnimation').innerText=bot;let res="";if(choice===bot)res="Égalité";else if((choice==='pierre'&&bot==='ciseaux')||(choice==='feuille'&&bot==='pierre')||(choice==='ciseaux'&&bot==='feuille')){res="Tu gagnes";rpsUser++;}else{res="Ordinateur gagne";rpsBot++;}document.getElementById('rpsResult').innerText=`Toi:${choice} | Ordi:${bot} → ${res}`;document.getElementById('rpsScore').innerText=`Toi:${rpsUser} | Ordi:${rpsBot}`;updateGlobalScore();}
+  
+  // Global score
+  function updateGlobalScore(){document.getElementById('globalScore').innerText=`Scores Globaux — Échecs:${chessWins} | Morpion:${scoreX+scoreO} | RPS:${rpsUser+rpsBot}`;}
+  </script>
 </body>
 </html>
+
